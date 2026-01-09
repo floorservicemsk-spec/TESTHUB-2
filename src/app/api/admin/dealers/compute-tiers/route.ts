@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { DealerTier } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+// Define type locally to avoid build-time prisma import
+type DealerTier = "TIER1" | "TIER2" | "TIER3" | "TIER4";
 
 // Lazy prisma import to avoid build-time issues
 const getPrisma = async () => {
@@ -12,18 +14,18 @@ const getPrisma = async () => {
 
 
 // Tier thresholds based on monthly turnover
-const TIER_THRESHOLDS = {
-  [DealerTier.TIER1]: 0,
-  [DealerTier.TIER2]: 100000,
-  [DealerTier.TIER3]: 500000,
-  [DealerTier.TIER4]: 1000000,
+const TIER_THRESHOLDS: Record<DealerTier, number> = {
+  TIER1: 0,
+  TIER2: 100000,
+  TIER3: 500000,
+  TIER4: 1000000,
 };
 
 function computeTier(monthlyTurnover: number): DealerTier {
-  if (monthlyTurnover >= TIER_THRESHOLDS[DealerTier.TIER4]) return DealerTier.TIER4;
-  if (monthlyTurnover >= TIER_THRESHOLDS[DealerTier.TIER3]) return DealerTier.TIER3;
-  if (monthlyTurnover >= TIER_THRESHOLDS[DealerTier.TIER2]) return DealerTier.TIER2;
-  return DealerTier.TIER1;
+  if (monthlyTurnover >= TIER_THRESHOLDS.TIER4) return "TIER4";
+  if (monthlyTurnover >= TIER_THRESHOLDS.TIER3) return "TIER3";
+  if (monthlyTurnover >= TIER_THRESHOLDS.TIER2) return "TIER2";
+  return "TIER1";
 }
 
 export async function POST() {

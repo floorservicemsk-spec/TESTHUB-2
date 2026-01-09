@@ -9,9 +9,16 @@
  * 5. Интеграция с базой знаний для текстур/фото
  */
 
-import prisma from "@/lib/prisma";
-import { KnowledgeType } from "@prisma/client";
 import { withCache, knowledgeBaseCache } from "@/lib/cache";
+
+// Define type locally to avoid build-time prisma import
+type KnowledgeType = "DOCUMENT" | "LINK" | "YANDEX_DISK" | "XML_FEED";
+
+// Lazy prisma import to avoid build-time issues
+const getPrisma = async () => {
+  const { default: prisma } = await import("@/lib/prisma");
+  return prisma;
+};
 
 // Types
 export interface Product {
@@ -105,8 +112,8 @@ export async function getProductIndex(): Promise<Map<string, Product[]>> {
   const xmlFeeds = await withCache(
     knowledgeBaseCache,
     "xml-feeds-full",
-    () => prisma.knowledgeBase.findMany({
-      where: { type: KnowledgeType.XML_FEED },
+    async () => (await getPrisma()).knowledgeBase.findMany({
+      where: { type: "XML_FEED" as KnowledgeType },
       select: { xmlData: true },
     }),
     10 * 60 * 1000 // 10 min cache

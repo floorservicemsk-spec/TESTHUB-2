@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { UserType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +19,7 @@ export async function GET() {
 
     const [dealers, bonusSettings] = await Promise.all([
       (await getPrisma()).user.findMany({
-        where: { userType: UserType.DEALER },
+        where: { userType: "DEALER" },
         include: { dealerProfile: true },
         orderBy: { createdAt: "desc" },
       }),
