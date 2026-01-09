@@ -54,11 +54,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       // Load user data and bonus settings in parallel
       const [currentUser, bonusSettings] = await Promise.all([
-        api.me(),
+        api.me().catch((err) => {
+          console.error("Error fetching user:", err);
+          return null;
+        }),
         api.getBonusSettings().catch(() => [] as BonusSettings[]),
       ]);
 
       setBonusEnabled(bonusSettings[0]?.enabled !== false);
+
+      if (!currentUser) {
+        // Could not fetch user data - might be auth config issue or network error
+        setUser(null);
+        setDealerProfile(null);
+        setLoading(false);
+        return;
+      }
 
       if (currentUser.isBlocked) {
         await signOut({ redirect: false });

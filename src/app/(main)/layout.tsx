@@ -207,7 +207,12 @@ export default function MainLayout({
     );
   }
 
-  if (!user) {
+  // Guest mode - allow access to public pages without login
+  const isGuestAllowed = ["/chat", "/faq", "/video", "/knowledgebase", "/calculator", "/tips", "/home", "/skupicker"].some(
+    (path) => pathname === path || pathname.startsWith(path + "/")
+  );
+
+  if (!user && !isGuestAllowed) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="glass-card-l2 p-8 rounded-3xl max-w-md w-full text-center">
@@ -216,7 +221,7 @@ export default function MainLayout({
           </div>
           <h1 className="text-h1 mb-4">ИИ-Ассистент</h1>
           <p className="text-secondary mb-8">
-            Войдите в систему для доступа к чату и базе знаний
+            Войдите в систему для доступа к этому разделу
           </p>
           <Button onClick={login} className="w-full">
             Войти в систему
@@ -381,74 +386,82 @@ export default function MainLayout({
 
           {/* Footer */}
           <div className="border-t border-white/20 p-6 pb-24 md:pb-6">
-            <div className="flex items-center justify-between p-2 rounded-xl">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div
-                  className={`w-8 h-8 ${chatIconBg} rounded-full flex items-center justify-center`}
-                >
-                  <User className="w-4 h-4 text-white" />
+            {user ? (
+              <div className="flex items-center justify-between p-2 rounded-xl">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div
+                    className={`w-8 h-8 ${chatIconBg} rounded-full flex items-center justify-center`}
+                  >
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-slate-900 text-sm truncate">
+                      {displayName}
+                    </p>
+                    {tierPill()}
+                    <p className="text-xs text-slate-500 truncate">
+                      {user?.email || "email не указан"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-slate-900 text-sm truncate">
-                    {displayName}
-                  </p>
-                  {tierPill()}
-                  <p className="text-xs text-slate-500 truncate">
-                    {user?.email || "email не указан"}
-                  </p>
+                <div className="flex items-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/account/profile"
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <User className="w-4 h-4" />
+                          Личные данные
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/account/legal"
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <Building className="w-4 h-4" />
+                          Юр. лица
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href="/account/orders"
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <History className="w-4 h-4" />
+                          История заказов
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={logout}
+                    className="hover:bg-red-50 hover:text-red-600"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="hover:bg-blue-50 hover:text-blue-600"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/account/profile"
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <User className="w-4 h-4" />
-                        Личные данные
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/account/legal"
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <Building className="w-4 h-4" />
-                        Юр. лица
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/account/orders"
-                        className="flex items-center gap-2 w-full"
-                      >
-                        <History className="w-4 h-4" />
-                        История заказов
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={logout}
-                  className="hover:bg-red-50 hover:text-red-600"
-                >
-                  <LogOut className="w-4 h-4" />
+            ) : (
+              <div className="p-2">
+                <Button onClick={login} className="w-full">
+                  Войти в систему
                 </Button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </aside>
