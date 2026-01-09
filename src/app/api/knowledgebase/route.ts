@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { KnowledgeType } from "@prisma/client";
 import { withCache, knowledgeBaseCache } from "@/lib/cache";
+
+// Define type locally to avoid build-time prisma import
+type KnowledgeType = "DOCUMENT" | "LINK" | "YANDEX_DISK" | "XML_FEED";
 
 export const dynamic = "force-dynamic";
 

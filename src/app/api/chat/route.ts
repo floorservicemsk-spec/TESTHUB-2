@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { invokeLLM, AIProviderSettings } from "@/lib/llm";
-import { KnowledgeType } from "@prisma/client";
 import { withCache, aiSettingsCache, knowledgeBaseCache } from "@/lib/cache";
 import { checkRateLimit } from "@/lib/rate-limiter";
+
+// Define type locally to avoid build-time prisma import
+type KnowledgeType = "DOCUMENT" | "LINK" | "YANDEX_DISK" | "XML_FEED";
 import { aiQueue } from "@/lib/ai-queue";
 import { aiResponseCache } from "@/lib/ai-cache";
 import { analyzeQuestion, getInstantResponse } from "@/lib/smart-router";
@@ -153,7 +155,7 @@ export async function POST(request: NextRequest) {
       withCache(
         knowledgeBaseCache,
         "xml-feeds",
-        async () => (await getPrisma()).knowledgeBase.findMany({ where: { type: KnowledgeType.XML_FEED } })
+        async () => (await getPrisma()).knowledgeBase.findMany({ where: { type: "XML_FEED" } })
       ),
     ]);
 
@@ -289,7 +291,7 @@ export async function POST(request: NextRequest) {
 
     // === GENERAL KNOWLEDGE BASE LOGIC ===
     const knowledgeItems = aiKnowledgeBase.filter(
-      (item) => item.type !== KnowledgeType.XML_FEED
+      (item) => item.type !== "XML_FEED"
     );
     let relevantItems: KnowledgeItem[] = [];
 
@@ -355,7 +357,7 @@ ${JSON.stringify(itemListForLLM, null, 2)}
     // Check for download-type items (yandex_disk)
     if (relevantItems.length > 0) {
       const yandexDiskItems = relevantItems.filter(
-        (i) => i.type === KnowledgeType.YANDEX_DISK
+        (i) => i.type === "YANDEX_DISK"
       );
       const downloadKeywords = [
         "скачать",
@@ -372,7 +374,7 @@ ${JSON.stringify(itemListForLLM, null, 2)}
         message.toLowerCase().includes(kw)
       );
       const allRelevantAreYandexDisk = relevantItems.every(
-        (i) => i.type === KnowledgeType.YANDEX_DISK
+        (i) => i.type === "YANDEX_DISK"
       );
       const shouldShowAsCards =
         isDirectDownloadRequest ||

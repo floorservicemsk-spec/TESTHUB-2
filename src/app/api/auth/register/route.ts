@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
-import { UserRole, UserType } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+// Define types locally to avoid build-time prisma import
+type UserRole = "USER" | "ADMIN";
+type UserType = "USER" | "DEALER" | "MANAGER";
 
 // Lazy prisma import to avoid build-time issues
 const getPrisma = async () => {
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         city: city || null,
         retailPoint: retailPoint || null,
-        role: UserRole.USER,
+        role: "USER" as UserRole,
         userType: userType as UserType,
         isApproved,
         isBlocked: false,
